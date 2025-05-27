@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Car Auction</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f0f0f0; }
+.navbar { background: #333; color: white; padding: 15px; text-align: center; font-size: 24px; }
+.controls { 
+  display: flex; 
+  flex-wrap: wrap; 
+  justify-content: center; 
+  align-items: center; 
+  gap: 15px; 
+  padding: 10px 20px; 
+  background: #fff; 
+}
+.controls select { 
+  padding: 6px 12px; 
+  border-radius: 5px; 
+  border: 1px solid #ccc; 
+  font-size: 14px; 
+}
+.counter { 
+  font-size: 18px; 
+  font-weight: bold; 
+  margin-right: 10px; 
+}
+.container { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; padding: 20px; }
+.car-card { background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); overflow: hidden; display: flex; flex-direction: column; transition: transform 0.3s ease; }
+.car-card:hover { transform: translateY(-5px); }
+.car-card img { width: 100%; height: 200px; object-fit: cover; }
+.car-info { padding: 15px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+.car-info h3 { margin: 0 0 10px; }
+.car-info p { margin: 5px 0; font-size: 14px; color: #555; }
+.button-group { display: flex; gap: 10px; margin-top: 10px; }
+.start-btn, .export-btn { flex: 1; background: #007bff; color: white; border: none; padding: 8px; border-radius: 5px; cursor: pointer; transition: background 0.3s; font-size: 14px; }
+.start-btn:hover, .export-btn:hover { background: #0056b3; }
+footer { background: #333; color: #fff; text-align: center; padding: 20px; font-size: 14px; margin-top: 30px; }
+  </style>
+</head>
+<body>
+
+<div class="navbar">Online Car Auction</div>
+
+<div class="controls">
+  <div class="counter" id="carCounter">Available Cars: 0</div>
+  <select id="brandFilter">
+    <option value="all">All Brands</option>
+  </select>
+  <select id="engineFilter">
+    <option value="all">All Engines</option>
+    <option value="Petrol">Petrol</option>
+    <option value="Diesel">Diesel</option>
+    <option value="Electric">Electric</option>
+  </select>
+  <select id="transmissionFilter">
+    <option value="all">All Transmissions</option>
+    <option value="Automatic">Automatic</option>
+    <option value="Manual">Manual</option>
+  </select>
+</div>
+
+<div class="container" id="car-container"></div>
+
+<footer>
+  <p>&copy; 2025 Online Car Auction | All auctions are online</p>
+  <p>Terms and Conditions | Privacy Policy | Contact: info@carauction.com</p>
+</footer>
+
+<script>
+// Масив фотографій
+const carImages = [
+  "https://images.pexels.com/photos/358070/pexels-photo-358070.jpeg",
+  "https://images.pexels.com/photos/210019/pexels-photo-210019.jpeg",
+  "https://images.pexels.com/photos/1149055/pexels-photo-1149055.jpeg",
+  "https://images.pexels.com/photos/799443/pexels-photo-799443.jpeg",
+  "https://images.pexels.com/photos/170811/pexels-photo-170811.jpeg",
+  "https://images.pexels.com/photos/244206/pexels-photo-244206.jpeg"
+  // ... додаєш ще 100 фоток сюди
+];
+
+// Генеруємо список машин
+const cars = Array.from({length: 100}, (_, i) => ({
+  brand: ["BMW", "Audi", "Mercedes", "Ford", "Tesla", "Honda", "Toyota", "Chevrolet", "Nissan", "Volkswagen"][Math.floor(Math.random()*10)],
+  model: `Model-${i+1}`,
+  year: 2015 + Math.floor(Math.random()*9),
+  engine: ["Petrol", "Diesel", "Electric"][Math.floor(Math.random()*3)],
+  mileage: 5000 + Math.floor(Math.random()*150000),
+  color: ["Red", "Black", "White", "Blue", "Gray"][Math.floor(Math.random()*5)],
+  transmission: ["Automatic", "Manual"][Math.floor(Math.random()*2)],
+  price: 10000 + Math.floor(Math.random()*50000),
+  date: `2025-0${Math.floor(Math.random()*9)+1}-${Math.floor(Math.random()*28)+1}`,
+  time: `${10+Math.floor(Math.random()*8)}:00`,
+  img: carImages[Math.floor(Math.random()*carImages.length)]
+}));
+
+const container = document.getElementById('car-container');
+const brandFilter = document.getElementById('brandFilter');
+const engineFilter = document.getElementById('engineFilter');
+const transmissionFilter = document.getElementById('transmissionFilter');
+const carCounter = document.getElementById('carCounter');
+
+// Підставляємо бренди
+const brands = [...new Set(cars.map(c => c.brand))];
+brands.forEach(b => {
+  const opt = document.createElement('option');
+  opt.value = b;
+  opt.textContent = b;
+  brandFilter.appendChild(opt);
+});
+
+async function generatePDF(car) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const img = await fetch(car.img + '?auto=compress&cs=tinysrgb&dpr=2&h=150&w=200')
+    .then(res => res.blob())
+    .then(blob => new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.readAsDataURL(blob);
+    }));
+
+  doc.addImage(img, 'JPEG', 10, 10, 80, 60);
+  doc.setFontSize(14);
+  doc.text(`Brand: ${car.brand}`, 10, 80);
+  doc.text(`Model: ${car.model}`, 10, 90);
+  doc.text(`Year: ${car.year}`, 10, 100);
+  doc.text(`Engine: ${car.engine}`, 10, 110);
+  doc.text(`Mileage: ${car.mileage.toLocaleString()} km`, 10, 120);
+  doc.text(`Color: ${car.color}`, 10, 130);
+  doc.text(`Transmission: ${car.transmission}`, 10, 140);
+  doc.text(`Price: $${car.price.toLocaleString()}`, 10, 150);
+  doc.text(`Auction Date: ${car.date} at ${car.time}`, 10, 160);
+  doc.save(`${car.brand}_${car.model}.pdf`);
+}
+
+function renderCars(list) {
+  container.innerHTML = '';
+  list.forEach((car, index) => {
+    const card = document.createElement('div');
+    card.className = 'car-card';
+    card.innerHTML = `
+      <img src="${car.img}" alt="${car.brand} ${car.model}">
+      <div class="car-info">
+        <h3>${car.brand} ${car.model}</h3>
+        <p>Year: ${car.year}</p>
+        <p>Engine: ${car.engine}</p>
+        <p>Mileage: ${car.mileage.toLocaleString()} km</p>
+        <p>Color: ${car.color}</p>
+        <p>Transmission: ${car.transmission}</p>
+        <p>Price: <strong>$${car.price.toLocaleString()}</strong></p>
+        <p>Auction: ${car.date} at ${car.time}</p>
+        <div class="button-group">
+          <button class="start-btn">Start Bidding</button>
+          <button class="export-btn" onclick="generatePDF(cars[${index}])">Export PDF</button>
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+  carCounter.innerText = `Available Cars: ${list.length}`;
+}
+
+function applyFilters() {
+  let filtered = [...cars];
+  if (brandFilter.value !== 'all') filtered = filtered.filter(c => c.brand === brandFilter.value);
+  if (engineFilter.value !== 'all') filtered = filtered.filter(c => c.engine === engineFilter.value);
+  if (transmissionFilter.value !== 'all') filtered = filtered.filter(c => c.transmission === transmissionFilter.value);
+  renderCars(filtered);
+}
+
+brandFilter.addEventListener('change', applyFilters);
+engineFilter.addEventListener('change', applyFilters);
+transmissionFilter.addEventListener('change', applyFilters);
+
+renderCars(cars);
+</script>
+
+</body>
+</html>
