@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Модель Автомобіля</title>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      background-color: #111;
+      color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    .controls {
+      margin: 20px 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+    select, button {
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    model-viewer {
+      width: 100%;
+      max-width: 900px;
+      height: 600px;
+      background-color: #1e1e1e;
+      border-radius: 10px;
+    }
+    .info {
+      max-width: 900px;
+      text-align: center;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>3D Модель Автомобіля</h1>
+
+  <div class="controls">
+    <label for="modelSelect">Оберіть модель:</label>
+    <select id="modelSelect">
+      <option value="car">Автомобіль</option>
+      <option value="engine">Двигун</option>
+      <option value="chassis">Шасі</option>
+    </select>
+
+    <button onclick="viewer.cameraOrbit = '0deg 90deg 3m'">Вид збоку</button>
+    <button onclick="viewer.cameraOrbit = '90deg 75deg 2m'">Передній вид</button>
+    <button onclick="viewer.cameraOrbit = '-90deg 85deg 3m'">Верхній вид</button>
+  </div>
+
+  <model-viewer 
+    id="viewer"
+    src="https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/CesiumMilkTruck/glTF/CesiumMilkTruck.gltf" 
+    alt="3D модель автомобіля" 
+    auto-rotate 
+    camera-controls 
+    shadow-intensity="1" 
+    exposure="1.2"
+    ar
+    ar-modes="webxr scene-viewer quick-look">
+  </model-viewer>
+
+  <div class="info" id="info">
+    <h2>Інформація про модель</h2>
+    <p>Це 3D модель вантажівки, що демонструє зовнішні та внутрішні складові транспортного засобу.</p>
+  </div>
+
+  <script>
+    const viewer = document.getElementById('viewer');
+    const modelSelect = document.getElementById('modelSelect');
+    const info = document.getElementById('info');
+
+    const models = {
+      car: {
+        url: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/CesiumMilkTruck/glTF/CesiumMilkTruck.gltf',
+        description: 'Це 3D модель вантажівки. Включає кабіну, колеса, кузов.'
+      },
+      engine: {
+        url: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Engine/glTF/Engine.gltf',
+        description: 'Це 3D модель двигуна. Підходить для демонстрації механічних компонентів.'
+      },
+      chassis: {
+        url: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/SimpleMesh/glTF/SimpleMesh.gltf',
+        description: 'Це спрощене уявлення шасі.'
+      }
+    };
+
+    modelSelect.addEventListener('change', () => {
+      const selected = modelSelect.value;
+      viewer.src = models[selected].url;
+      info.querySelector('p').textContent = models[selected].description;
+    });
+  </script>
+</body>
+</html>
