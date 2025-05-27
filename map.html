@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Карта аукціонів</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f5;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      margin: 20px;
+    }
+    #map {
+      height: 80vh;
+      margin: 0 auto;
+      width: 90%;
+      border-radius: 10px;
+    }
+    .filters {
+      width: 90%;
+      margin: 20px auto;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .filters select, .filters button {
+      padding: 8px 12px;
+      font-size: 16px;
+    }
+    .back-button {
+      display: block;
+      text-align: center;
+      margin: 20px;
+    }
+    .back-button a {
+      text-decoration: none;
+      background: #007bff;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 6px;
+    }
+    .back-button a:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h1>Карта аукціонів в Україні</h1>
+  <div class="filters">
+    <select id="dealerFilter">
+      <option value="all">Усі автосалони</option>
+      <option value="AutoLux">AutoLux</option>
+      <option value="DriveNow">DriveNow</option>
+    </select>
+    <select id="typeFilter">
+      <option value="all">Тип авто</option>
+      <option value="new">Нові</option>
+      <option value="used">Вживані</option>
+    </select>
+    <button onclick="locateUser()">Моя геолокація</button>
+  </div>
+
+  <div id="map"></div>
+  <div class="back-button">
+    <a href="index.html">На головну</a>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([49.0, 31.0], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const auctions = [
+      {
+        dealer: 'AutoLux',
+        rating: 4.5,
+        type: 'new',
+        location: [50.4501, 30.5234],
+        address: 'Київ, Хрещатик 10',
+        time: '2025-06-01 12:00'
+      },
+      {
+        dealer: 'DriveNow',
+        rating: 4.2,
+        type: 'used',
+        location: [49.8397, 24.0297],
+        address: 'Львів, вул. Шевченка 45',
+        time: '2025-06-05 14:00'
+      },
+      {
+        dealer: 'AutoLux',
+        rating: 4.5,
+        type: 'used',
+        location: [48.4647, 35.0462],
+        address: 'Дніпро, вул. Центральна 18',
+        time: '2025-06-07 10:30'
+      }
+    ];
+
+    const markers = [];
+
+    function renderMarkers() {
+      markers.forEach(marker => map.removeLayer(marker));
+      markers.length = 0;
+
+      const selectedDealer = document.getElementById('dealerFilter').value;
+      const selectedType = document.getElementById('typeFilter').value;
+
+      auctions.forEach(a => {
+        if ((selectedDealer === 'all' || a.dealer === selectedDealer) &&
+            (selectedType === 'all' || a.type === selectedType)) {
+          const marker = L.marker(a.location).addTo(map)
+            .bindPopup(`<strong>${a.dealer}</strong><br>${a.address}<br>${a.time}<br>${a.type === 'new' ? 'Нове авто' : 'Вживане авто'}<br>Рейтинг: ${a.rating} ⭐`);
+          markers.push(marker);
+        }
+      });
+    }
+
+    function locateUser() {
+      map.locate({ setView: true, maxZoom: 12 });
+      map.on("locationfound", e => {
+        L.marker(e.latlng).addTo(map).bindPopup("Ви тут").openPopup();
+      });
+    }
+
+    document.getElementById('dealerFilter').addEventListener('change', renderMarkers);
+    document.getElementById('typeFilter').addEventListener('change', renderMarkers);
+
+    renderMarkers();
+  </script>
+</body>
+</html>
