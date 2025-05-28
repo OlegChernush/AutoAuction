@@ -46,11 +46,6 @@
       border-radius: 10px;
       height: 400px;
       object-fit: cover;
-      animation: fade 1.5s ease-in-out;
-    }
-    @keyframes fade {
-      from { opacity: 0.3; }
-      to { opacity: 1; }
     }
     .info p {
       margin: 5px 0;
@@ -126,7 +121,7 @@
   <h1>Аукціон: Porsche Panamera</h1>
   <div class="auction-container">
     <div class="slider">
-      <img id="slider" src="https://images.pexels.com/photos/358070/pexels-photo-358070.jpeg" alt="Porsche Panamera">
+      <img id="slider" src="https://images.pexels.com/photos/30601477/pexels-photo-30601477.jpeg" alt="Porsche Panamera">
     </div>
 
     <div class="info">
@@ -167,17 +162,8 @@
   <audio id="bidSound" src="https://www.myinstants.com/media/sounds/cash-register.mp3"></audio>
 
   <script>
-    const images = [
-      'https://images.pexels.com/photos/358070/pexels-photo-358070.jpeg',
-      'https://images.pexels.com/photos/210019/pexels-photo-210019.jpeg',
-      'https://images.pexels.com/photos/170811/pexels-photo-170811.jpeg'
-    ];
-    let sliderIndex = 0;
     const slider = document.getElementById('slider');
-    setInterval(() => {
-      sliderIndex = (sliderIndex + 1) % images.length;
-      slider.src = images[sliderIndex];
-    }, 4000);
+    slider.src = 'https://images.pexels.com/photos/30601477/pexels-photo-30601477.jpeg';
 
     let timeLeft = 60;
     const countdownEl = document.getElementById('countdown');
@@ -199,7 +185,7 @@
 
     function placeBid(amount, anonymous = false) {
       currentBid += amount;
-      const name = anonymous ? 'Anonymous' : 'You';
+      const name = anonymous ? 'Анонім' : 'Ви';
       const entry = document.createElement('p');
       entry.textContent = `${name}: $${currentBid}`;
       bidHistoryEl.prepend(entry);
@@ -222,9 +208,9 @@
     async function exportPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
-      doc.text("Auction: Porsche Panamera", 10, 10);
-      doc.text(`Last Bid: $${currentBid}`, 10, 20);
-      doc.text("Bid History:", 10, 30);
+      doc.text("Аукціон: Porsche Panamera", 10, 10);
+      doc.text(`Остання ставка: $${currentBid}`, 10, 20);
+      doc.text("Історія ставок:", 10, 30);
       const history = Array.from(bidHistoryEl.querySelectorAll('p')).slice(0, 10);
       history.forEach((el, i) => {
         doc.text(el.textContent, 10, 40 + i * 10);
